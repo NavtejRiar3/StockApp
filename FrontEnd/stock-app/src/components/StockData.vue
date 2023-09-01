@@ -2,6 +2,18 @@
     <div>
       <h1>Stock Data</h1>
       <div class='stockData'>
+        <input v-model="symbol" placeholder="Enter Stock Ticker Symbol"/>
+        <select v-model="period">
+            <option>1d</option>
+            <option>5d</option>
+            <option>1wk</option>
+            <option>1mo</option>
+            <option>3mo</option>
+            <option>1y</option>
+            <option>5y</option>
+            <option>max</option>
+
+        </select>
         <button @click='retrieveStockData'>Get Stock Data</button>
         <div v-if="isLoading">Loading...</div>
         <div v-if="error">{{ error }}</div>
@@ -23,18 +35,20 @@
       return {
         data: null,
         isLoading: null,
-        error: null
+        error: null,
+        symbol:'',
+        period:''
       }
     },
     methods: {
         async retrieveStockData() {
             this.isLoading = true
             this.error = null
-            var symbol = 'aapl'
-            var period = '5d'
+            this.data = null
+            const { symbol, period } = this
 
             try {
-                const response = await fetchStockData('aapl', '5d')
+                const response = await fetchStockData(symbol, period)
 
                 this.data = response.data
             } catch (error) {
