@@ -2,8 +2,8 @@
     <div>
       <h1>Stock Data</h1>
       <div class='stockData'>
-        <input v-model="symbol" placeholder="Enter Stock Ticker Symbol"/>
-        <select v-model="period">
+        <input v-model='symbol' placeholder='Enter Stock Ticker Symbol'/>
+        <select v-model='period'>
             <option>1d</option>
             <option>5d</option>
             <option>1wk</option>
@@ -15,21 +15,23 @@
 
         </select>
         <button @click='retrieveStockData'>Get Stock Data</button>
-        <div v-if="isLoading">Loading...</div>
-        <div v-if="error">{{ error }}</div>
-        <div v-if="data">
-            {{ data }}
-        </div>
+        <div v-if='isLoading'>Loading...</div>
+        <div v-if='error'>{{ error }}</div>
+        <div v-if='errorMessage'>{{ errorMessage }}</div>
+
+        <stock-data-plotter :stockData='data' :key='data' />
       </div>
     </div>
 
-  </template>
+</template>
   
   <script>
   import { fetchStockData } from '../service/api.js'
+  import StockDataPlotter from './Plotter/StockDataPlotter.vue'
 
   export default {
     components: {
+      StockDataPlotter
     },
     data() {
       return {
@@ -37,7 +39,8 @@
         isLoading: null,
         error: null,
         symbol:'',
-        period:''
+        period:'5d',
+        errorMessage:''
       }
     },
     methods: {
@@ -45,16 +48,20 @@
             this.isLoading = true
             this.error = null
             this.data = null
+            this.errorMessage = ''
             const { symbol, period } = this
+            var response = null
 
             try {
-                const response = await fetchStockData(symbol, period)
-
-                this.data = response.data
+                response = await fetchStockData(symbol, period)
+                this.data = response
             } catch (error) {
                 console.log(error)
                 this.error = `An error occured when fetching stock data for ${symbol} over ${period}`
             } finally {
+                if (!this.data) {
+                  this.errorMessage = `No stock market data for ${symbol} over ${period}`
+                }
                 this.isLoading = false
             }
         }
